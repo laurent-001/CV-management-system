@@ -1,8 +1,23 @@
 {% extends 'jobs/base.html' %}
-
-{% block title %}Home - Recruitment Portal{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
-    <h1>Welcome to the Recruitment Portal</h1>
-    <p>Your one-stop solution for finding your dream job and managing your career.</p>
+<div class="container">
+    {% if company_info %}
+        <h1>{{ company_info.name }}</h1>
+        {% if company_info.logo %}
+            <img src="{{ company_info.logo.url }}" alt="{{ company_info.name }} Logo" class="company-logo">
+        {% endif %}
+        <p>{{ company_info.description }}</p>
+        <h2>Contact Information</h2>
+        <ul>
+            <li>Email: {{ company_info.email }}</li>
+            <li>Phone: {{ company_info.phone }}</li>
+            <li>Address: {{ company_info.address }}</li>
+        </ul>
+    {% else %}
+        <h1>Welcome to the Recruitment Portal</h1>
+        <p>Company information is not available at the moment.</p>
+    {% endif %}
+</div>
 {% endblock %}

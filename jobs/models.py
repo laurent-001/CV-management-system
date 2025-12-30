@@ -1,6 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class CompanyInfo(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    address = models.CharField(max_length=255)
+    logo = models.ImageField(upload_to='company/')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
 class JobPosition(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -13,6 +25,7 @@ class JobPosition(models.Model):
 class Applicant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20)
+    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
 
     def __str__(self):
         return self.user.username

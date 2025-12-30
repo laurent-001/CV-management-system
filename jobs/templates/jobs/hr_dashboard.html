@@ -1,35 +1,43 @@
 {% extends 'jobs/base.html' %}
-
 {% block title %}HR Dashboard{% endblock %}
 
 {% block content %}
-    <h2>All CV Applications</h2>
-    {% if applications %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Applicant</th>
-                    <th>Job Title</th>
-                    <th>Status</th>
-                    <th>Submitted At</th>
-                    <th>CV</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                    <tr>
-                        <td>{{ app.applicant.user.username }}</td>
-                        <td>{{ app.job_position.title }}</td>
-                        <td>{{ app.status }}</td>
-                        <td>{{ app.submitted_at|date:"Y-m-d H:i" }}</td>
-                        <td><a href="{{ app.cv_file.url }}" target="_blank">View CV</a></td>
-                        <td><a href="{% url 'update_application_status' app.id %}">Update Status</a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No applications have been submitted yet.</p>
-    {% endif %}
+<div class="container">
+    <h1>HR Dashboard</h1>
+    <h2>All Applications</h2>
+
+    <form method="get" class="filter-form">
+        <label for="job">Filter by Job:</label>
+        <select name="job" id="job">
+            <option value="">All Jobs</option>
+            {% for job in jobs %}
+                <option value="{{ job.id }}" {% if request.GET.job == job.id|stringformat:"s" %}selected{% endif %}>{{ job.title }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="status">Filter by Status:</label>
+        <select name="status" id="status">
+            <option value="">All Statuses</option>
+            {% for status_key, status_value in statuses %}
+                <option value="{{ status_key }}" {% if request.GET.status == status_key %}selected{% endif %}>{{ status_value }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn">Filter</button>
+    </form>
+
+    <div class="application-list">
+        {% for application in applications %}
+            <div class="application">
+                <h3>{{ application.job_position.title }} - {{ application.applicant.user.username }}</h3>
+                <p><strong>Status:</strong> {{ application.status }}</p>
+                <p><strong>Submitted At:</strong> {{ application.submitted_at|date:"d M Y" }}</p>
+                <a href="{{ application.cv_file.url }}" target="_blank" class="btn">Download CV</a>
+                <a href="{% url 'update_application_status' application.id %}" class="btn">Update Status</a>
+            </div>
+        {% empty %}
+            <p>No applications found.</p>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.core.mail import send_mail
-from .models import JobPosition, Applicant, CVApplication
+from .models import CompanyInfo, JobPosition, Applicant, CVApplication
 from .forms import (
     UserRegistrationForm,
     ApplicantProfileForm,
@@ -17,7 +17,8 @@ from django.contrib.auth.models import User
 # Home view
 def home_view(request):
     """Displays the company introduction/home page."""
-    return render(request, 'jobs/home.html')
+    company_info = CompanyInfo.objects.first()
+    return render(request, 'jobs/home.html', {'company_info': company_info})
 
 # Job list view
 def job_list_view(request):
@@ -30,7 +31,7 @@ def register_view(request):
     """Handles user registration."""
     if request.method == 'POST':
         user_form = UserRegistrationForm(request.POST)
-        profile_form = ApplicantProfileForm(request.POST)
+        profile_form = ApplicantProfileForm(request.POST, request.FILES)
         if user_form.is_valid() and profile_form.is_valid():
             user = user_form.save(commit=False)
             user.set_password(user_form.cleaned_data['password'])
@@ -108,7 +109,8 @@ def applicant_dashboard_view(request):
     """Displays the applications submitted by the logged-in applicant."""
     applicant = get_object_or_404(Applicant, user=request.user)
     applications = CVApplication.objects.filter(applicant=applicant).order_by('-submitted_at')
-    return render(request, 'jobs/applicant_dashboard.html', {'applications': applications})
+    company_info = CompanyInfo.objects.first()
+    return render(request, 'jobs/applicant_dashboard.html', {'applications': applications, 'company_info': company_info})
 
 
 # Helper for checking if a user is staff
@@ -121,7 +123,17 @@ def is_staff(user):
 def hr_dashboard_view(request):
     """Displays all CV applications for HR staff."""
     applications = CVApplication.objects.all().order_by('-submitted_at')
-    return render(request, 'jobs/hr_dashboard.html', {'applications': applications})
+    job_filter = request.GET.get('job')
+    status_filter = request.GET.get('status')
+    if job_filter:
+        applications = applications.filter(job_position__id=job_filter)
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+
+    jobs = JobPosition.objects.all()
+    statuses = CVApplication.STATUS_CHOICES
+
+    return render(request, 'jobs/hr_dashboard.html', {'applications': applications, 'jobs': jobs, 'statuses': statuses})
 
 # Update application status view
 @user_passes_test(is_staff)

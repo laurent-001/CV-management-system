@@ -1,21 +1,20 @@
 {% extends 'jobs/base.html' %}
-
-{% block title %}Available Jobs{% endblock %}
+{% block title %}Job Listings{% endblock %}
 
 {% block content %}
-    <h2>Available Job Positions</h2>
-    {% if jobs %}
-        <ul>
-            {% for job in jobs %}
-                <li>
-                    <h3>{{ job.title }}</h3>
-                    <p><strong>Location:</strong> {{ job.location }}</p>
-                    <p>{{ job.description|truncatewords:30 }}</p>
-                    <a href="{% url 'submit_cv' job.id %}">Apply Now</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No job positions available at the moment. Please check back later.</p>
-    {% endif %}
+<div class="container">
+    <h1>Available Job Positions</h1>
+    <div class="job-listings">
+        {% for job in jobs %}
+            <div class="job-listing">
+                <h2>{{ job.title }}</h2>
+                <p><strong>Location:</strong> {{ job.location }}</p>
+                <p>{{ job.description|truncatewords:50 }}</p>
+                <a href="{% url 'submit_cv' job.id %}" class="btn">Apply Now</a>
+            </div>
+        {% empty %}
+            <p>No job positions available at the moment. Please check back later.</p>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,5 @@
+Watching for file changes with StatReloader
+[30/Dec/2025 19:11:09] "GET / HTTP/1.1" 200 782
+[30/Dec/2025 19:11:09] "GET /static/jobs/css/styles.css HTTP/1.1" 200 2044
+[30/Dec/2025 19:11:10] "GET /register/ HTTP/1.1" 200 2089
+[30/Dec/2025 19:11:10] "GET /login/ HTTP/1.1" 200 1300
