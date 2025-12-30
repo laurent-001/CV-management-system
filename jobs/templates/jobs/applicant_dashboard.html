@@ -1,0 +1,31 @@
+{% extends 'jobs/base.html' %}
+
+{% block title %}Applicant Dashboard{% endblock %}
+
+{% block content %}
+    <h2>My Applications</h2>
+    {% if applications %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Job Title</th>
+                    <th>Status</th>
+                    <th>Submitted At</th>
+                    <th>CV</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                    <tr>
+                        <td>{{ app.job_position.title }}</td>
+                        <td>{{ app.status }}</td>
+                        <td>{{ app.submitted_at|date:"Y-m-d H:i" }}</td>
+                        <td><a href="{{ app.cv_file.url }}" target="_blank">View CV</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>You have not submitted any applications yet.</p>
+    {% endif %}
+{% endblock %}

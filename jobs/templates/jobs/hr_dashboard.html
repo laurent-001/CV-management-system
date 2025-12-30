@@ -1,0 +1,35 @@
+{% extends 'jobs/base.html' %}
+
+{% block title %}HR Dashboard{% endblock %}
+
+{% block content %}
+    <h2>All CV Applications</h2>
+    {% if applications %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Applicant</th>
+                    <th>Job Title</th>
+                    <th>Status</th>
+                    <th>Submitted At</th>
+                    <th>CV</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                    <tr>
+                        <td>{{ app.applicant.user.username }}</td>
+                        <td>{{ app.job_position.title }}</td>
+                        <td>{{ app.status }}</td>
+                        <td>{{ app.submitted_at|date:"Y-m-d H:i" }}</td>
+                        <td><a href="{{ app.cv_file.url }}" target="_blank">View CV</a></td>
+                        <td><a href="{% url 'update_application_status' app.id %}">Update Status</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No applications have been submitted yet.</p>
+    {% endif %}
+{% endblock %}
