@@ -19,7 +19,14 @@ class UserRegistrationForm(forms.ModelForm):
 class ApplicantProfileForm(forms.ModelForm):
     class Meta:
         model = Applicant
-        fields = ('phone_number',)
+        fields = ('phone_number', 'profile_picture')
+
+    def clean_profile_picture(self):
+        profile_picture = self.cleaned_data.get('profile_picture', False)
+        if profile_picture:
+            if not profile_picture.name.endswith('.jpg') and not profile_picture.name.endswith('.png') and not profile_picture.name.endswith('.jpeg'):
+                raise forms.ValidationError("Only JPG, PNG, and JPEG files are allowed.")
+        return profile_picture
 
 class CVApplicationForm(forms.ModelForm):
     class Meta:

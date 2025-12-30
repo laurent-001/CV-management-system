@@ -1,13 +1,14 @@
 {% extends 'jobs/base.html' %}
-
 {% block title %}Register{% endblock %}
 
 {% block content %}
-    <h2>Create an Account</h2>
-    <form method="post">
+<div class="container">
+    <h1>Register</h1>
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ user_form.as_p }}
         {{ profile_form.as_p }}
-        <button type="submit">Register</button>
+        <button type="submit" class="btn">Register</button>
     </form>
+</div>
 {% endblock %}

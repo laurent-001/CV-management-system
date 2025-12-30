@@ -1,12 +1,14 @@
 {% extends 'jobs/base.html' %}
-
 {% block title %}Update Application Status{% endblock %}
 
 {% block content %}
-    <h2>Update Status for {{ application.applicant.user.username }}'s application for {{ application.job_position.title }}</h2>
+<div class="container">
+    <h1>Update Status for {{ application.applicant.user.username }}'s Application</h1>
+    <h2>{{ application.job_position.title }}</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Update Status</button>
+        <button type="submit" class="btn">Update Status</button>
     </form>
+</div>
 {% endblock %}
