@@ -8,6 +8,11 @@ class CompanyInfo(models.Model):
     phone = models.CharField(max_length=20)
     address = models.CharField(max_length=255)
     logo = models.ImageField(upload_to='company/')
+    banner_image = models.ImageField(upload_to='company/', null=True, blank=True)
+    facebook_url = models.URLField(blank=True)
+    linkedin_url = models.URLField(blank=True)
+    twitter_url = models.URLField(blank=True)
+    instagram_url = models.URLField(blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

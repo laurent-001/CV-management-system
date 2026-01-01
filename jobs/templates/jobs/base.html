@@ -4,38 +4,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Recruitment Portal{% endblock %}</title>
+    <title>{% block title %}{{ company_info.name }} - Recruitment Portal{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'jobs/css/styles.css' %}">
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'job_list' %}">Jobs</a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'applicant_dashboard' %}">Dashboard</a>
-                <a href="{% url 'logout' %}">Logout</a>
-                {% if user.is_staff %}
-                    <a href="{% url 'hr_dashboard' %}">HR Dashboard</a>
+    <header class="main-header">
+        <nav class="container">
+            <a href="{% url 'home' %}" class="logo">
+                {% if company_info.logo %}
+                    <img src="{{ company_info.logo.url }}" alt="{{ company_info.name }} Logo">
+                {% else %}
+                    <span>{{ company_info.name }}</span>
                 {% endif %}
-            {% else %}
-                <a href="{% url 'login' %}">Login</a>
-                <a href="{% url 'register' %}">Register</a>
-            {% endif %}
+            </a>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'job_list' %}">Jobs</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'applicant_dashboard' %}">Dashboard</a></li>
+                    {% if user.is_staff %}
+                        <li><a href="{% url 'hr_dashboard' %}">HR Dashboard</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}" class="btn btn-primary">Register</a></li>
+                {% endif %}
+            </ul>
         </nav>
     </header>
+
     <main>
         {% if messages %}
-            <ul class="messages">
+            <div class="messages-container">
                 {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    <div class="message {{ message.tags }}">{{ message }}</div>
                 {% endfor %}
-            </ul>
+            </div>
         {% endif %}
         {% block content %}{% endblock %}
     </main>
-    <footer>
-        <p>&copy; {% now "Y" %} Recruitment Portal</p>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4>{{ company_info.name }}</h4>
+                    <p>{{ company_info.description|truncatewords:30 }}</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li><a href="mailto:{{ company_info.email }}">{{ company_info.email }}</a></li>
+                        <li><a href="tel:{{ company_info.phone }}">{{ company_info.phone }}</a></li>
+                        <li><span>{{ company_info.address }}</span></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'job_list' %}">Jobs</a></li>
+                        <li><a href="{% url 'applicant_dashboard' %}">Applicant Dashboard</a></li>
+                        {% if user.is_staff %}
+                            <li><a href="{% url 'hr_dashboard' %}">HR Dashboard</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        {% if company_info.facebook_url %}<a href="{{ company_info.facebook_url }}" target="_blank">Facebook</a>{% endif %}
+                        {% if company_info.twitter_url %}<a href="{{ company_info.twitter_url }}" target="_blank">Twitter</a>{% endif %}
+                        {% if company_info.linkedin_url %}<a href="{{ company_info.linkedin_url }}" target="_blank">LinkedIn</a>{% endif %}
+                        {% if company_info.instagram_url %}<a href="{{ company_info.instagram_url }}" target="_blank">Instagram</a>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; {% now "Y" %} {{ company_info.name }}. All rights reserved.</p>
+            </div>
+        </div>
     </footer>
 </body>
 </html>

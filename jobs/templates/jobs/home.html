@@ -1,23 +1,47 @@
 {% extends 'jobs/base.html' %}
-{% block title %}Home{% endblock %}
+{% load static %}
+{% block title %}Welcome to {{ company_info.name }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    {% if company_info %}
-        <h1>{{ company_info.name }}</h1>
-        {% if company_info.logo %}
-            <img src="{{ company_info.logo.url }}" alt="{{ company_info.name }} Logo" class="company-logo">
-        {% endif %}
-        <p>{{ company_info.description }}</p>
-        <h2>Contact Information</h2>
-        <ul>
-            <li>Email: {{ company_info.email }}</li>
-            <li>Phone: {{ company_info.phone }}</li>
-            <li>Address: {{ company_info.address }}</li>
-        </ul>
-    {% else %}
-        <h1>Welcome to the Recruitment Portal</h1>
-        <p>Company information is not available at the moment.</p>
-    {% endif %}
-</div>
+<section class="hero-section" style="background-image: url('{% if company_info.banner_image %}{{ company_info.banner_image.url }}{% else %}{% static 'jobs/images/default-banner.jpg' %}{% endif %}');">
+    <div class="hero-overlay"></div>
+    <div class="hero-content container">
+        <h1>Find Your Dream Career</h1>
+        <p>Join our team and build a future with us. Your next opportunity is just a click away.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'job_list' %}" class="btn btn-primary">View Jobs</a>
+            <a href="{% url 'register' %}" class="btn btn-secondary">Apply Now</a>
+        </div>
+    </div>
+</section>
+
+<section class="latest-jobs-section">
+    <div class="container">
+        <h2>Latest Job Openings</h2>
+        <div class="job-listings">
+            {% for job in latest_jobs %}
+                <div class="job-card">
+                    <h3>{{ job.title }}</h3>
+                    <p class="job-location">{{ job.location }}</p>
+                    <p>{{ job.description|truncatewords:20 }}</p>
+                    <a href="{% url 'submit_cv' job.id %}" class="btn btn-outline">Apply Now</a>
+                </div>
+            {% empty %}
+                <p>No job openings at the moment. Please check back later.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="company-gallery-section">
+    <div class="container">
+        <h2>Our Company</h2>
+        <div class="gallery-grid">
+            <!-- Add gallery images here if available, otherwise use placeholders -->
+            <div class="gallery-item"><img src="{% static 'jobs/images/gallery1.jpg' %}" alt="Company Image 1"></div>
+            <div class="gallery-item"><img src="{% static 'jobs/images/gallery2.jpg' %}" alt="Company Image 2"></div>
+            <div class="gallery-item"><img src="{% static 'jobs/images/gallery3.jpg' %}" alt="Company Image 3"></div>
+        </div>
+    </div>
+</section>
 {% endblock %}
