@@ -18,7 +18,11 @@ from django.contrib.auth.models import User
 def home_view(request):
     """Displays the company introduction/home page."""
     company_info = CompanyInfo.objects.first()
-    return render(request, 'jobs/home.html', {'company_info': company_info})
+    latest_jobs = JobPosition.objects.all().order_by('-created_at')[:5]
+    return render(request, 'jobs/home.html', {
+        'company_info': company_info,
+        'latest_jobs': latest_jobs
+    })
 
 # Job list view
 def job_list_view(request):

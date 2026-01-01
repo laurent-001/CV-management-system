@@ -1,5 +1,17 @@
 Watching for file changes with StatReloader
-[30/Dec/2025 19:11:09] "GET / HTTP/1.1" 200 782
-[30/Dec/2025 19:11:09] "GET /static/jobs/css/styles.css HTTP/1.1" 200 2044
-[30/Dec/2025 19:11:10] "GET /register/ HTTP/1.1" 200 2089
-[30/Dec/2025 19:11:10] "GET /login/ HTTP/1.1" 200 1300
+[01/Jan/2026 19:27:25] "GET / HTTP/1.1" 200 5599
+[01/Jan/2026 19:27:25] "GET /static/jobs/images/gallery3.jpg HTTP/1.1" 200 3154
+[01/Jan/2026 19:27:25] "GET /static/jobs/css/styles.css HTTP/1.1" 200 4863
+[01/Jan/2026 19:27:25] "GET /static/jobs/images/default-banner.jpg HTTP/1.1" 200 8711
+[01/Jan/2026 19:27:25] "GET /static/jobs/images/gallery2.jpg HTTP/1.1" 200 3161
+[01/Jan/2026 19:27:25] "GET /static/jobs/images/gallery1.jpg HTTP/1.1" 200 3111
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 01, 2026 - 19:26:57
+Django version 5.2.9, using settings 'recruitment_portal.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
