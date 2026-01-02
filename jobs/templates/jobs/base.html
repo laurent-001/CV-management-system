@@ -87,5 +87,54 @@
             </div>
         </div>
     </footer>
+
+    <!-- Notification Toast Container -->
+    <div id="notification-toast" class="notification-toast"></div>
+
+    <style>
+    /* Notification Toast */
+    .notification-toast {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        background-color: #111111;
+        color: #ffffff;
+        padding: 15px 20px;
+        border-radius: 8px;
+        border-left: 5px solid #FF7A00; /* Orange accent */
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        z-index: 1050;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateX(120%);
+        transition: all 0.4s ease-in-out;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .notification-toast.show {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(0);
+    }
+    </style>
+
+    <script>
+    /**
+     * Shows a notification toast message.
+     * @param {string} message - The message to display.
+     */
+    function showNotification(message) {
+        const toast = document.getElementById('notification-toast');
+        if (toast) {
+            toast.textContent = message;
+            toast.classList.add('show');
+
+            // Hide the toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    }
+    </script>
 </body>
 </html>
