@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Dashboard</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    {% if user.profile.role == 'POSTER' %}
+                        <li><a href="{% url 'employer_dashboard' %}" class="{% if request.resolver_match.url_name == 'employer_dashboard' %}active{% endif %}">Dashboard</a></li>
+                        <li><a href="{% url 'create_job' %}" class="{% if request.resolver_match.url_name == 'create_job' %}active{% endif %}">Post a Job</a></li>
+                    {% else %}
+                        <li><a href="{% url 'applicant_dashboard' %}" class="{% if request.resolver_match.url_name == 'applicant_dashboard' %}active{% endif %}">Dashboard</a></li>
+                        <li><a href="{% url 'applicant_profile' %}" class="{% if request.resolver_match.url_name == 'applicant_profile' %}active{% endif %}">Profile</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Toggle sidebar">
+                    &#9776;
+                </button>
+                <h1>{% block page_title %}{% endblock %}</h1>
+                <div class="user-info">
+                    <span>Welcome, {{ user.username }}</span>
+                </div>
+            </header>
+            <section class="content">
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    </script>
+</body>
+</html>

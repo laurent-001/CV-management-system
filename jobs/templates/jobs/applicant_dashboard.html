@@ -1,44 +1,61 @@
-{% extends 'jobs/base.html' %}
-{% block title %}Applicant Dashboard - {{ company_info.name }}{% endblock %}
+{% extends 'jobs/dashboard_base.html' %}
+{% block title %}Applicant Dashboard{% endblock %}
+{% block page_title %}Applicant Dashboard{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-  <div class="container">
-    <div class="dashboard-header">
-      <h2>My Applications</h2>
+<div class="summary-cards">
+    <div class="card">
+        <h3>Total Applications</h3>
+        <p>{{ total_applications }}</p>
     </div>
+    <div class="card">
+        <h3>Interviews Scheduled</h3>
+        <p>{{ interviews_scheduled }}</p>
+    </div>
+</div>
 
-    {% if applications %}
-    <div class="job-list-table">
-      <table>
+<div class="notifications">
+    <h2>Notifications</h2>
+    {% for notification in notifications %}
+        <div class="notification">
+            <p>{{ notification.message }}</p>
+            <span class="date">{{ notification.created_at|date:"Y-m-d" }}</span>
+        </div>
+    {% empty %}
+        <p>No new notifications.</p>
+    {% endfor %}
+</div>
+
+<div class="application-listings">
+    <h2>Your Applications</h2>
+    <table>
         <thead>
-          <tr>
-            <th>Job Title</th>
-            <th>Company</th>
-            <th>Submitted On</th>
-            <th>Status</th>
-          </tr>
+            <tr>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Date Applied</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
         </thead>
         <tbody>
-          {% for app in applications %}
-          <tr>
-            <td>{{ app.job.title }}</td>
-            <td>{{ app.job.posted_by.companyinfo.name|default:"A Great Company" }}</td>
-            <td>{{ app.submitted_at|date:"Y-m-d" }}</td>
-            <td>
-              <span class="status-badge status-{{ app.status|lower }}">{{ app.get_status_display }}</span>
-            </td>
-          </tr>
-          {% endfor %}
+            {% for application in applications %}
+                <tr>
+                    <td>{{ application.job.title }}</td>
+                    <td>{{ company_info.name|default:'The Company' }}</td>
+                    <td>{{ application.submitted_at|date:"Y-m-d" }}</td>
+                    <td>{{ application.status }}</td>
+                    <td>
+                        <a href="{% url 'job_detail' application.job.id %}">View Details</a>
+                        <a href="{% url 'withdraw_application' application.id %}">Withdraw</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">You have not applied for any jobs yet.</td>
+                </tr>
+            {% endfor %}
         </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="no-jobs-message">
-      <p>You have not applied for any jobs yet.</p>
-      <a href="{% url 'job_list' %}" class="btn btn-primary">Find a Job</a>
-    </div>
-    {% endif %}
-  </div>
+    </table>
 </div>
 {% endblock %}

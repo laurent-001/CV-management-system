@@ -1,8 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-
 from .models import JobApplication, JobPosition, Profile
-
 
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -23,7 +21,6 @@ class UserRegistrationForm(forms.ModelForm):
             raise forms.ValidationError("Passwords don't match.")
         return cd["password2"]
 
-
 class JobForm(forms.ModelForm):
     class Meta:
         model = JobPosition
@@ -34,11 +31,11 @@ class JobForm(forms.ModelForm):
             "location",
             "job_type",
             "application_deadline",
+            "status",
         ]
         widgets = {
             "application_deadline": forms.DateInput(attrs={"type": "date"}),
         }
-
 
 class JobApplicationForm(forms.ModelForm):
     class Meta:
@@ -52,7 +49,6 @@ class JobApplicationForm(forms.ModelForm):
             "education",
             "cv_file",
             "additional_documents",
-            "profile_picture",
         ]
 
     def clean_cv_file(self):
@@ -61,16 +57,17 @@ class JobApplicationForm(forms.ModelForm):
             raise forms.ValidationError("Only PDF, DOC, and DOCX files are allowed.")
         return cv_file
 
-    def clean_profile_picture(self):
-        profile_picture = self.cleaned_data.get("profile_picture", False)
-        if profile_picture and not profile_picture.name.lower().endswith(
-            (".jpg", ".png", ".jpeg")
-        ):
-            raise forms.ValidationError("Only JPG, PNG, and JPEG files are allowed.")
-        return profile_picture
-
-
 class ApplicationStatusForm(forms.ModelForm):
     class Meta:
         model = JobApplication
         fields = ("status",)
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ("bio", "profile_picture", "cv")
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = JobApplication
+        fields = ("feedback",)

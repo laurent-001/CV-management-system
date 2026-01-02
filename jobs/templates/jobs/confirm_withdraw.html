@@ -1,0 +1,14 @@
+{% extends 'jobs/dashboard_base.html' %}
+{% block title %}Confirm Withdrawal{% endblock %}
+{% block page_title %}Confirm Withdrawal{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <p>Are you sure you want to withdraw your application for the position of <strong>{{ application.job.title }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirm</button>
+        <a href="{% url 'applicant_dashboard' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'jobs/dashboard_base.html' %}
+{% block title %}Your Profile{% endblock %}
+{% block page_title %}Your Profile{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+    <div class="profile-header">
+        <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
+        <h2>{{ user.username }}</h2>
+        <p>{{ user.email }}</p>
+    </div>
+    <div class="profile-body">
+        <h3>Bio</h3>
+        <p>{{ profile.bio|default:"No bio provided." }}</p>
+        <h3>CV</h3>
+        {% if profile.cv %}
+            <a href="{{ profile.cv.url }}" target="_blank">Download CV</a>
+        {% else %}
+            <p>No CV uploaded.</p>
+        {% endif %}
+    </div>
+    <div class="profile-actions">
+        <a href="{% url 'applicant_profile_edit' %}" class="btn btn-primary">Edit Profile</a>
+    </div>
+</div>
+{% endblock %}
