@@ -1,0 +1,52 @@
+{% extends 'jobs/base.html' %}
+{% block title %}Employer Dashboard - {{ company_info.name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <div class="container">
+    <div class="dashboard-header">
+      <h2>Employer Dashboard</h2>
+      <a href="{% url 'create_job' %}" class="btn btn-primary">Post a New Job</a>
+    </div>
+
+    {% if jobs %}
+    <div class="job-list-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Job Title</th>
+            <th>Location</th>
+            <th>Job Type</th>
+            <th>Deadline</th>
+            <th>Applicants</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in jobs %}
+          <tr>
+            <td>{{ job.title }}</td>
+            <td>{{ job.location }}</td>
+            <td>{{ job.get_job_type_display }}</td>
+            <td>{{ job.application_deadline|date:"Y-m-d" }}</td>
+            <td>
+              <a href="{% url 'view_applicants' job.id %}" class="link">View ({{ job.jobapplication_set.count }})</a>
+            </td>
+            <td class="job-actions">
+              <a href="{% url 'edit_job' job.id %}" class="btn-action edit">Edit</a>
+              <a href="{% url 'delete_job' job.id %}" class="btn-action delete">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="no-jobs-message">
+      <p>You have not posted any jobs yet. Get started by posting your first job!</p>
+      <a href="{% url 'create_job' %}" class="btn btn-primary">Post a Job</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
