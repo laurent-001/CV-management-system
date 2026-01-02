@@ -1,30 +1,44 @@
 {% extends 'jobs/base.html' %}
-{% block title %}Applicant Dashboard{% endblock %}
+{% block title %}Applicant Dashboard - {{ company_info.name }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Applicant Dashboard</h1>
-    <h2>My Applications</h2>
-    <div class="application-list">
-        {% for application in applications %}
-            <div class="application">
-                <h3>{{ application.job_position.title }}</h3>
-                <p><strong>Status:</strong> {{ application.status }}</p>
-                <p><strong>Submitted At:</strong> {{ application.submitted_at|date:"d M Y" }}</p>
-                <a href="{{ application.cv_file.url }}" target="_blank">View CV</a>
-            </div>
-        {% empty %}
-            <p>You have not submitted any applications yet.</p>
-        {% endfor %}
+<div class="dashboard-container">
+  <div class="container">
+    <div class="dashboard-header">
+      <h2>My Applications</h2>
     </div>
-    <h2>Company Contact Information</h2>
-    {% if company_info %}
-        <p>For feedback or inquiries, please contact us at:</p>
-        <ul>
-            <li>Email: {{ company_info.email }}</li>
-        </ul>
+
+    {% if applications %}
+    <div class="job-list-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Job Title</th>
+            <th>Company</th>
+            <th>Submitted On</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+          <tr>
+            <td>{{ app.job.title }}</td>
+            <td>{{ app.job.posted_by.companyinfo.name|default:"A Great Company" }}</td>
+            <td>{{ app.submitted_at|date:"Y-m-d" }}</td>
+            <td>
+              <span class="status-badge status-{{ app.status|lower }}">{{ app.get_status_display }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% else %}
-        <p>Contact information is not available at the moment.</p>
+    <div class="no-jobs-message">
+      <p>You have not applied for any jobs yet.</p>
+      <a href="{% url 'job_list' %}" class="btn btn-primary">Find a Job</a>
+    </div>
     {% endif %}
+  </div>
 </div>
 {% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'jobs/base.html' %}
+{% block title %}Post a New Job - {{ company_info.name }}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card" style="max-width: 600px">
+    <h2>Post a New Job</h2>
+    <p>Fill out the details below to find your next great hire.</p>
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }} {% if field.errors %}
+        <div class="form-errors">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Post Job</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

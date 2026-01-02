@@ -1,175 +1,213 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib import messages
 from django.core.mail import send_mail
-from .models import CompanyInfo, JobPosition, Applicant, CVApplication
+from django.shortcuts import get_object_or_404, redirect, render
+
 from .forms import (
-    UserRegistrationForm,
-    ApplicantProfileForm,
-    CVApplicationForm,
     ApplicationStatusForm,
-    JobPositionForm
+    JobApplicationForm,
+    JobForm,
+    UserRegistrationForm,
 )
-from django.contrib.auth.models import User
+from .models import CompanyInfo, JobApplication, JobPosition, Profile
+
+
+# Permission helpers
+def is_poster(user):
+    return user.is_authenticated and hasattr(user, "profile") and user.profile.role == "POSTER"
+
+
+def is_applicant(user):
+    return (
+        user.is_authenticated and hasattr(user, "profile") and user.profile.role == "APPLICANT"
+    )
+
 
 # Home view
 def home_view(request):
-    """Displays the company introduction/home page."""
     company_info = CompanyInfo.objects.first()
-    latest_jobs = JobPosition.objects.all().order_by('-created_at')[:5]
-    return render(request, 'jobs/home.html', {
-        'company_info': company_info,
-        'latest_jobs': latest_jobs
-    })
+    latest_jobs = JobPosition.objects.all().order_by("-created_at")[:5]
+    return render(
+        request,
+        "jobs/home.html",
+        {"company_info": company_info, "latest_jobs": latest_jobs},
+    )
+
 
 # Job list view
 def job_list_view(request):
-    """Lists all available job positions."""
-    jobs = JobPosition.objects.all().order_by('-created_at')
-    return render(request, 'jobs/job_list.html', {'jobs': jobs})
+    jobs = JobPosition.objects.all().order_by("-created_at")
+    return render(request, "jobs/job_list.html", {"jobs": jobs})
+
 
 # User registration view
 def register_view(request):
-    """Handles user registration."""
-    if request.method == 'POST':
-        user_form = UserRegistrationForm(request.POST)
-        profile_form = ApplicantProfileForm(request.POST, request.FILES)
-        if user_form.is_valid() and profile_form.is_valid():
-            user = user_form.save(commit=False)
-            user.set_password(user_form.cleaned_data['password'])
+    if request.method == "POST":
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data["password"])
             user.save()
-
-            applicant = profile_form.save(commit=False)
-            applicant.user = user
-            applicant.save()
-
-            messages.success(request, 'Registration successful. You can now log in.')
-            return redirect('login')
+            Profile.objects.create(user=user, role=form.cleaned_data["role"])
+            messages.success(request, "Registration successful. You can now log in.")
+            return redirect("login")
     else:
-        user_form = UserRegistrationForm()
-        profile_form = ApplicantProfileForm()
-    return render(request, 'jobs/register.html', {
-        'user_form': user_form,
-        'profile_form': profile_form
-    })
+        form = UserRegistrationForm()
+    return render(request, "jobs/register.html", {"form": form})
+
 
 # User login view
 def login_view(request):
-    """Handles user login."""
-    if request.method == 'POST':
+    if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                if user.is_staff:
-                    return redirect('hr_dashboard')
-                return redirect('applicant_dashboard')
+                if is_poster(user):
+                    return redirect("employer_dashboard")
+                return redirect("applicant_dashboard")
             else:
-                messages.error(request, 'Invalid username or password.')
+                messages.error(request, "Invalid username or password.")
         else:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, "Invalid username or password.")
     else:
         form = AuthenticationForm()
-    return render(request, 'jobs/login.html', {'form': form})
+    return render(request, "jobs/login.html", {"form": form})
+
 
 # User logout view
 def logout_view(request):
-    """Handles user logout."""
     logout(request)
-    return redirect('home')
+    return redirect("home")
 
-# CV submission view
-@login_required
-def submit_cv_view(request, job_id):
-    """Allows an applicant to submit their CV for a job."""
+
+# Job application view (replaces submit_cv_view)
+@user_passes_test(is_applicant)
+def apply_for_job_view(request, job_id):
     job = get_object_or_404(JobPosition, id=job_id)
-    applicant, created = Applicant.objects.get_or_create(user=request.user)
-
-    if CVApplication.objects.filter(applicant=applicant, job_position=job).exists():
-        messages.warning(request, 'You have already applied for this position.')
-        return redirect('job_list')
-
-    if request.method == 'POST':
-        form = CVApplicationForm(request.POST, request.FILES)
+    if JobApplication.objects.filter(applicant=request.user, job=job).exists():
+        messages.warning(request, "You have already applied for this position.")
+        return redirect("job_list")
+    if request.method == "POST":
+        form = JobApplicationForm(request.POST, request.FILES)
         if form.is_valid():
             application = form.save(commit=False)
-            application.applicant = applicant
-            application.job_position = job
+            application.applicant = request.user
+            application.job = job
             application.save()
-            messages.success(request, 'Your application has been submitted successfully.')
-            return redirect('applicant_dashboard')
+            messages.success(request, "Your application has been submitted successfully.")
+            return redirect("applicant_dashboard")
     else:
-        form = CVApplicationForm()
-    return render(request, 'jobs/submit_cv.html', {'form': form, 'job': job})
+        form = JobApplicationForm()
+    return render(request, "jobs/apply_job.html", {"form": form, "job": job})
+
 
 # Applicant dashboard view
-@login_required
+@user_passes_test(is_applicant)
 def applicant_dashboard_view(request):
-    """Displays the applications submitted by the logged-in applicant."""
-    applicant = get_object_or_404(Applicant, user=request.user)
-    applications = CVApplication.objects.filter(applicant=applicant).order_by('-submitted_at')
+    applications = JobApplication.objects.filter(applicant=request.user).order_by(
+        "-submitted_at"
+    )
     company_info = CompanyInfo.objects.first()
-    return render(request, 'jobs/applicant_dashboard.html', {'applications': applications, 'company_info': company_info})
+    return render(
+        request,
+        "jobs/applicant_dashboard.html",
+        {"applications": applications, "company_info": company_info},
+    )
 
 
-# Helper for checking if a user is staff
-def is_staff(user):
-    return user.is_staff
+# Employer dashboard view
+@user_passes_test(is_poster)
+def employer_dashboard_view(request):
+    jobs = JobPosition.objects.filter(posted_by=request.user).order_by("-created_at")
+    return render(request, "jobs/employer_dashboard.html", {"jobs": jobs})
 
-# HR dashboard view
-@user_passes_test(is_staff)
-@login_required
-def hr_dashboard_view(request):
-    """Displays all CV applications for HR staff."""
-    applications = CVApplication.objects.all().order_by('-submitted_at')
-    job_filter = request.GET.get('job')
-    status_filter = request.GET.get('status')
-    if job_filter:
-        applications = applications.filter(job_position__id=job_filter)
-    if status_filter:
-        applications = applications.filter(status=status_filter)
 
-    jobs = JobPosition.objects.all()
-    statuses = CVApplication.STATUS_CHOICES
+# Job creation view
+@user_passes_test(is_poster)
+def create_job_view(request):
+    if request.method == "POST":
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.posted_by = request.user
+            job.save()
+            messages.success(request, "Job posted successfully.")
+            return redirect("employer_dashboard")
+    else:
+        form = JobForm()
+    return render(request, "jobs/post_job.html", {"form": form})
 
-    return render(request, 'jobs/hr_dashboard.html', {'applications': applications, 'jobs': jobs, 'statuses': statuses})
+
+# Job edit view
+@user_passes_test(is_poster)
+def edit_job_view(request, job_id):
+    job = get_object_or_404(JobPosition, id=job_id, posted_by=request.user)
+    if request.method == "POST":
+        form = JobForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Job updated successfully.")
+            return redirect("employer_dashboard")
+    else:
+        form = JobForm(instance=job)
+    return render(request, "jobs/edit_job.html", {"form": form})
+
+
+# Job delete view
+@user_passes_test(is_poster)
+def delete_job_view(request, job_id):
+    job = get_object_or_404(JobPosition, id=job_id, posted_by=request.user)
+    if request.method == "POST":
+        job.delete()
+        messages.success(request, "Job deleted successfully.")
+        return redirect("employer_dashboard")
+    return render(request, "jobs/confirm_delete_job.html", {"job": job})
+
+
+# View applicants for a job
+@user_passes_test(is_poster)
+def view_applicants_view(request, job_id):
+    job = get_object_or_404(JobPosition, id=job_id, posted_by=request.user)
+    applications = JobApplication.objects.filter(job=job).order_by("-submitted_at")
+    return render(
+        request,
+        "jobs/view_applicants.html",
+        {"job": job, "applications": applications},
+    )
+
 
 # Update application status view
-@user_passes_test(is_staff)
-@login_required
+@user_passes_test(is_poster)
 def update_application_status_view(request, application_id):
-    """Allows HR to update the status of a CV application and notify the applicant."""
-    application = get_object_or_404(CVApplication, id=application_id)
-    if request.method == 'POST':
+    application = get_object_or_404(JobApplication, id=application_id)
+    # Ensure the poster owns the job associated with the application
+    if application.job.posted_by != request.user:
+        messages.error(request, "You are not authorized to perform this action.")
+        return redirect("employer_dashboard")
+    if request.method == "POST":
         form = ApplicationStatusForm(request.POST, instance=application)
         if form.is_valid():
             original_status = application.status
             updated_application = form.save()
-
-            # Send email notification if status changes to 'Interview' or 'Rejected'
-            if updated_application.status != original_status and updated_application.status in ['Interview', 'Rejected']:
-                subject = f'Update on your application for {application.job_position.title}'
-                message = (
-                    f'Dear {application.applicant.user.username},\n\n'
-                    f'The status of your application for the position of {application.job_position.title} '
-                    f'has been updated to: {updated_application.status}.\n\n'
-                    f'Thank you for your interest in our company.\n\n'
-                    f'Best regards,\n'
-                    f'The HR Team'
-                )
-                from_email = 'hr@recruitmentportal.com' # Sender email
-                to_email = [application.applicant.user.email] # Recipient email
-
-                # The console email backend will print the email to the console.
+            if (
+                updated_application.status != original_status
+                and updated_application.status in ["Interview", "Rejected"]
+            ):
+                subject = f"Update on your application for {application.job.title}"
+                message = f"Dear {application.applicant.username},\n\nThe status of your application for the position of {application.job.title} has been updated to: {updated_application.status}.\n\nThank you for your interest in our company.\n\nBest regards,\nThe HR Team"
+                from_email = "hr@recruitmentportal.com"
+                to_email = [application.applicant.email]
                 send_mail(subject, message, from_email, to_email)
-
-            messages.success(request, 'Application status updated successfully.')
-            return redirect('hr_dashboard')
+            messages.success(request, "Application status updated successfully.")
+            return redirect("view_applicants", job_id=application.job.id)
     else:
         form = ApplicationStatusForm(instance=application)
-    return render(request, 'jobs/update_status.html', {'form': form, 'application': application})
+    return render(
+        request, "jobs/update_status.html", {"form": form, "application": application}
+    )

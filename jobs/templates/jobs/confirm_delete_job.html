@@ -1,0 +1,22 @@
+{% extends 'jobs/base.html' %}
+{% block title %}Confirm Delete - {{ company_info.name }}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Confirm Deletion</h2>
+    <p>
+      Are you sure you want to delete the job posting for "<strong>{{ job.title }}</strong
+      >"?
+    </p>
+    <p>This action cannot be undone.</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="confirm-delete-buttons">
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'employer_dashboard' %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

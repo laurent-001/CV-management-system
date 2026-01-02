@@ -1,0 +1,48 @@
+{% extends 'jobs/base.html' %}
+{% block title %}Applicants for {{ job.title }} - {{ company_info.name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <div class="container">
+    <div class="dashboard-header">
+      <h2>Applicants for "{{ job.title }}"</h2>
+      <a href="{% url 'employer_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    {% if applications %}
+    <div class="job-list-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Applicant Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Submitted On</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+          <tr>
+            <td>{{ app.full_name }}</td>
+            <td>{{ app.email }}</td>
+            <td>{{ app.phone_number }}</td>
+            <td>{{ app.get_status_display }}</td>
+            <td>{{ app.submitted_at|date:"Y-m-d" }}</td>
+            <td class="job-actions">
+              <a href="{% url 'update_application_status' app.id %}" class="btn-action edit">Update Status</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="no-jobs-message">
+      <p>There are no applicants for this position yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

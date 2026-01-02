@@ -1,0 +1,23 @@
+{% extends 'jobs/base.html' %}
+{% block title %}Apply for {{ job.title }} - {{ company_info.name }}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card" style="max-width: 700px">
+    <h2>Apply for {{ job.title }}</h2>
+    <p>Submit your application by filling out the form below.</p>
+    <form method="post" enctype="multipart/form-data" class="auth-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }} {% if field.errors %}
+        <div class="form-errors">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Submit Application</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
