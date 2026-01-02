@@ -1,24 +1,13 @@
-{% extends 'jobs/base.html' %} {% block title %}Update Application Status - {{
-company_info.name }}{% endblock %} {% block content %}
-<div class="auth-container">
-  <div class="auth-card" style="max-width: 500px">
-    <h2>
-      Update Status for {{ application.full_name }}'s Application
-    </h2>
-    <p>
-      Current status for "<strong>{{ application.job.title }}</strong
-      >" is <strong>{{ application.get_status_display }}</strong>.
-    </p>
-    <form method="post" class="auth-form">
-      {% csrf_token %}
-      <div class="form-field">
-        <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
-        {{ form.status }} {% if form.status.errors %}
-        <div class="form-errors">{{ form.status.errors }}</div>
-        {% endif %}
-      </div>
-      <button type="submit" class="btn btn-primary">Update Status</button>
+{% extends 'jobs/dashboard_base.html' %}
+{% block title %}Update Application Status{% endblock %}
+{% block page_title %}Update Status for {{ application.full_name }}{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Update Status</button>
     </form>
-  </div>
 </div>
 {% endblock %}

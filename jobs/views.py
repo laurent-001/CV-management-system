@@ -2,16 +2,18 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from .forms import (
     ApplicationStatusForm,
+    FeedbackForm,
     JobApplicationForm,
     JobForm,
+    ProfileForm,
     UserRegistrationForm,
 )
-from .models import CompanyInfo, JobApplication, JobPosition, Profile
+from .models import JobApplication, JobPosition, Notification, Profile
 
 
 # Permission helpers
@@ -27,19 +29,23 @@ def is_applicant(user):
 
 # Home view
 def home_view(request):
-    company_info = CompanyInfo.objects.first()
-    latest_jobs = JobPosition.objects.all().order_by("-created_at")[:5]
+    latest_jobs = JobPosition.objects.filter(status="Open").order_by("-created_at")[:5]
     return render(
         request,
         "jobs/home.html",
-        {"company_info": company_info, "latest_jobs": latest_jobs},
+        {"latest_jobs": latest_jobs},
     )
 
 
 # Job list view
 def job_list_view(request):
-    jobs = JobPosition.objects.all().order_by("-created_at")
+    jobs = JobPosition.objects.filter(status="Open").order_by("-created_at")
     return render(request, "jobs/job_list.html", {"jobs": jobs})
+
+# Job detail view
+def job_detail_view(request, job_id):
+    job = get_object_or_404(JobPosition, id=job_id)
+    return render(request, "jobs/job_detail.html", {"job": job})
 
 
 # User registration view
@@ -86,7 +92,7 @@ def logout_view(request):
     return redirect("home")
 
 
-# Job application view (replaces submit_cv_view)
+# Job application view
 @user_passes_test(is_applicant)
 def apply_for_job_view(request, job_id):
     job = get_object_or_404(JobPosition, id=job_id)
@@ -110,14 +116,21 @@ def apply_for_job_view(request, job_id):
 # Applicant dashboard view
 @user_passes_test(is_applicant)
 def applicant_dashboard_view(request):
-    applications = JobApplication.objects.filter(applicant=request.user).order_by(
-        "-submitted_at"
-    )
-    company_info = CompanyInfo.objects.first()
+    applications = JobApplication.objects.filter(
+        applicant=request.user, is_active=True
+    ).order_by("-submitted_at")
+    total_applications = applications.count()
+    interviews_scheduled = applications.filter(status="Interview").count()
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False)
     return render(
         request,
         "jobs/applicant_dashboard.html",
-        {"applications": applications, "company_info": company_info},
+        {
+            "applications": applications,
+            "total_applications": total_applications,
+            "interviews_scheduled": interviews_scheduled,
+            "notifications": notifications,
+        },
     )
 
 
@@ -125,7 +138,22 @@ def applicant_dashboard_view(request):
 @user_passes_test(is_poster)
 def employer_dashboard_view(request):
     jobs = JobPosition.objects.filter(posted_by=request.user).order_by("-created_at")
-    return render(request, "jobs/employer_dashboard.html", {"jobs": jobs})
+    total_jobs = jobs.count()
+    total_applications = JobApplication.objects.filter(job__in=jobs).count()
+    seven_days_ago = timezone.now() - timezone.timedelta(days=7)
+    new_applications = JobApplication.objects.filter(
+        job__in=jobs, submitted_at__gte=seven_days_ago
+    ).count()
+    return render(
+        request,
+        "jobs/employer_dashboard.html",
+        {
+            "jobs": jobs,
+            "total_jobs": total_jobs,
+            "total_applications": total_applications,
+            "new_applications": new_applications,
+        },
+    )
 
 
 # Job creation view
@@ -186,24 +214,17 @@ def view_applicants_view(request, job_id):
 @user_passes_test(is_poster)
 def update_application_status_view(request, application_id):
     application = get_object_or_404(JobApplication, id=application_id)
-    # Ensure the poster owns the job associated with the application
     if application.job.posted_by != request.user:
         messages.error(request, "You are not authorized to perform this action.")
         return redirect("employer_dashboard")
     if request.method == "POST":
         form = ApplicationStatusForm(request.POST, instance=application)
         if form.is_valid():
-            original_status = application.status
-            updated_application = form.save()
-            if (
-                updated_application.status != original_status
-                and updated_application.status in ["Interview", "Rejected"]
-            ):
-                subject = f"Update on your application for {application.job.title}"
-                message = f"Dear {application.applicant.username},\n\nThe status of your application for the position of {application.job.title} has been updated to: {updated_application.status}.\n\nThank you for your interest in our company.\n\nBest regards,\nThe HR Team"
-                from_email = "hr@recruitmentportal.com"
-                to_email = [application.applicant.email]
-                send_mail(subject, message, from_email, to_email)
+            application = form.save()
+            Notification.objects.create(
+                recipient=application.applicant,
+                message=f"The status of your application for {application.job.title} has been updated to {application.status}.",
+            )
             messages.success(request, "Application status updated successfully.")
             return redirect("view_applicants", job_id=application.job.id)
     else:
@@ -211,3 +232,68 @@ def update_application_status_view(request, application_id):
     return render(
         request, "jobs/update_status.html", {"form": form, "application": application}
     )
+
+
+# Provide feedback to applicant
+@user_passes_test(is_poster)
+def provide_feedback_view(request, application_id):
+    application = get_object_or_404(JobApplication, id=application_id)
+    if application.job.posted_by != request.user:
+        messages.error(request, "You are not authorized to perform this action.")
+        return redirect("employer_dashboard")
+    if request.method == "POST":
+        form = FeedbackForm(request.POST, instance=application)
+        if form.is_valid():
+            form.save()
+            Notification.objects.create(
+                recipient=application.applicant,
+                message=f"You have received feedback on your application for {application.job.title}.",
+            )
+            messages.success(request, "Feedback submitted successfully.")
+            return redirect("view_applicants", job_id=application.job.id)
+    else:
+        form = FeedbackForm(instance=application)
+    return render(
+        request, "jobs/provide_feedback.html", {"form": form, "application": application}
+    )
+
+
+# Applicant profile management
+@user_passes_test(is_applicant)
+def applicant_profile_view(request):
+    profile = get_object_or_404(Profile, user=request.user)
+    return render(request, "jobs/applicant_profile.html", {"profile": profile})
+
+# View applicant profile (for employers)
+@user_passes_test(is_poster)
+def view_applicant_profile_view(request, applicant_id):
+    profile = get_object_or_404(Profile, id=applicant_id)
+    return render(request, "jobs/applicant_profile.html", {"profile": profile})
+
+
+@user_passes_test(is_applicant)
+def applicant_profile_edit_view(request):
+    profile = get_object_or_404(Profile, user=request.user)
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("applicant_profile")
+    else:
+        form = ProfileForm(instance=profile)
+    return render(request, "jobs/applicant_profile_edit.html", {"form": form})
+
+
+# Withdraw application
+@user_passes_test(is_applicant)
+def withdraw_application_view(request, application_id):
+    application = get_object_or_404(
+        JobApplication, id=application_id, applicant=request.user
+    )
+    if request.method == "POST":
+        application.is_active = False
+        application.save()
+        messages.success(request, "Application withdrawn successfully.")
+        return redirect("applicant_dashboard")
+    return render(request, "jobs/confirm_withdraw.html", {"application": application})
