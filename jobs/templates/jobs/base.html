@@ -70,8 +70,8 @@
                         <li><a href="{% url 'home' %}">Home</a></li>
                         <li><a href="{% url 'job_list' %}">Jobs</a></li>
                         <li><a href="{% url 'applicant_dashboard' %}">Applicant Dashboard</a></li>
-                        {% if user.is_staff %}
-                            <li><a href="{% url 'hr_dashboard' %}">HR Dashboard</a></li>
+                        {% if user.profile.role == 'POSTER' %}
+                            <li><a href="{% url 'employer_dashboard' %}">Employer Dashboard</a></li>
                         {% endif %}
                     </ul>
                 </div>
