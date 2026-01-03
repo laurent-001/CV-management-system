@@ -1,0 +1,28 @@
+{% extends 'jobs/base.html' %}
+{% load static %}
+{% block title %}Page Not Found{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/error_pages.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-container">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">Page Not Found</h2>
+        <p class="error-message">Sorry, the page you are looking for does not exist. It might have been moved or deleted.</p>
+        <div class="error-actions">
+            <a href="{% url 'home' %}" class="btn btn-primary">Go Home</a>
+            <a href="mailto:{{ company_info.email }}" class="btn btn-secondary">Contact Support</a>
+            {% if user.is_authenticated %}
+                {% if user.profile.role == 'APPLICANT' %}
+                    <a href="{% url 'applicant_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+                {% elif user.profile.role == 'POSTER' %}
+                    <a href="{% url 'employer_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+:root {
+    --primary-color: #FF7A00;
+    --secondary-color: #111111;
+    --white-color: #FFFFFF;
+    --border-radius: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-image-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 2rem;
+    font-family: sans-serif;
+    color: var(--secondary-color);
+}
+
+.profile-image-wrapper {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    cursor: pointer;
+}
+
+.profile-image-wrapper.dragover {
+    border: 2px dashed var(--primary-color);
+    border-radius: 50%;
+}
+
+.profile-image-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--white-color);
+    box-shadow: var(--shadow);
+    background-color: #f0f0f0;
+}
+
+.profile-image-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: var(--white-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-size: 2rem;
+}
+
+.profile-image-wrapper:hover .profile-image-overlay {
+    opacity: 1;
+}
+
+.profile-image-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-upload {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-upload:hover {
+    background-color: #e66a00;
+}
+
+.btn-remove {
+    background-color: #e0e0e0;
+    color: var(--secondary-color);
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-remove:hover {
+    background-color: #ccc;
+}
+
+.upload-status {
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.upload-status .error-message {
+    color: #d9534f;
+}
+
+.upload-status .success-message {
+    color: #5cb85c;
+}
+
+#profileImageInput {
+    display: none;
+}

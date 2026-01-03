@@ -2,9 +2,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.http import JsonResponse
 from .forms import (
     ApplicationStatusForm,
     FeedbackForm,
@@ -353,3 +354,28 @@ def withdraw_application_view(request, application_id):
         messages.success(request, "Application withdrawn successfully.")
         return redirect("applicant_dashboard")
     return render(request, "jobs/confirm_withdraw.html", {"application": application})
+
+# Error handler views
+def custom_400_view(request, exception):
+    """
+    Custom view to handle 400 Bad Request errors.
+    """
+    return render(request, 'jobs/400.html', status=400)
+
+def custom_403_view(request, exception):
+    """
+    Custom view to handle 403 Forbidden errors.
+    """
+    return render(request, 'jobs/403.html', status=403)
+
+def custom_404_view(request, exception):
+    """
+    Custom view to handle 404 Page Not Found errors.
+    """
+    return render(request, 'jobs/404.html', status=404)
+
+def custom_500_view(request):
+    """
+    Custom view to handle 500 Internal Server Error.
+    """
+    return render(request, 'jobs/500.html', status=500)
