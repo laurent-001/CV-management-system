@@ -26,7 +26,7 @@ class Profile(models.Model):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     bio = models.TextField(blank=True)
     profile_picture = models.ImageField(
-        upload_to="profiles/", default="profiles/default.png", null=True, blank=True
+        upload_to="profiles/", default="profiles/default.jpg", null=True, blank=True
     )
     cv = models.FileField(upload_to="cvs/", null=True, blank=True)
 
