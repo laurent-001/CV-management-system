@@ -62,10 +62,27 @@ class ApplicationStatusForm(forms.ModelForm):
         model = JobApplication
         fields = ("status",)
 
+
+class ProfileImageForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ("profile_picture",)
+
+    def clean_profile_picture(self):
+        picture = self.cleaned_data.get("profile_picture")
+        if picture:
+            if picture.size > 2 * 1024 * 1024:  # 2MB
+                raise forms.ValidationError("Image file too large ( > 2MB )")
+            if not picture.name.lower().endswith((".jpg", ".jpeg", ".png")):
+                raise forms.ValidationError("Only JPG, JPEG, and PNG formats are allowed.")
+        return picture
+
+
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ("bio", "profile_picture", "cv")
+        fields = ("bio", "cv")
+
 
 class FeedbackForm(forms.ModelForm):
     class Meta:
