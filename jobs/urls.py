@@ -25,4 +25,7 @@ urlpatterns = [
     path('dashboard/employer/applicant/<int:applicant_id>/profile/', views.view_applicant_profile_view, name='view_applicant_profile'),
     path('dashboard/employer/applicant/<int:application_id>/update/', views.update_application_status_view, name='update_application_status'),
     path('dashboard/employer/applicant/<int:application_id>/feedback/', views.provide_feedback_view, name='provide_feedback'),
+    # Profile image management
+    path("profile/upload-image/", views.profile_image_upload_view, name="profile_image_upload"),
+    path("profile/remove-image/", views.profile_image_remove_view, name="profile_image_remove"),
 ]

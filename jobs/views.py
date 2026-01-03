@@ -4,13 +4,14 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-
+from django.http import JsonResponse
 from .forms import (
     ApplicationStatusForm,
     FeedbackForm,
     JobApplicationForm,
     JobForm,
     ProfileForm,
+    ProfileImageForm,
     UserRegistrationForm,
 )
 from .models import JobApplication, JobPosition, Notification, Profile
@@ -258,7 +259,62 @@ def provide_feedback_view(request, application_id):
     )
 
 
+from PIL import Image
+from django.core.files.base import ContentFile
+import io
+
 # Applicant profile management
+@login_required
+def profile_image_upload_view(request):
+    if request.method == "POST":
+        form = ProfileImageForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            profile = form.save(commit=False)
+
+            if 'profile_picture' in request.FILES:
+                image = Image.open(request.FILES['profile_picture'])
+
+                # Crop to a square
+                width, height = image.size
+                if width != height:
+                    min_dim = min(width, height)
+                    left = (width - min_dim) / 2
+                    top = (height - min_dim) / 2
+                    right = (width + min_dim) / 2
+                    bottom = (height + min_dim) / 2
+                    image = image.crop((left, top, right, bottom))
+
+                # Resize to 300x300
+                image = image.resize((300, 300), Image.LANCZOS)
+
+                # Save the processed image
+                buffer = io.BytesIO()
+                image.save(buffer, format='PNG')
+                profile.profile_picture.save(request.FILES['profile_picture'].name, ContentFile(buffer.getvalue()))
+
+            profile.save()
+            return JsonResponse({"success": True, "profile_image_url": profile.profile_picture.url})
+        else:
+            return JsonResponse({"success": False, "errors": form.errors})
+    return JsonResponse({"success": False, "errors": "Invalid request method"})
+
+
+@login_required
+def profile_image_remove_view(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        profile.profile_picture.delete(save=False)
+        profile.profile_picture = None
+        profile.save()
+
+        # Get the URL of the default image
+        from django.templatetags.static import static
+        default_image_url = static('images/default-profile.svg')
+
+        return JsonResponse({"success": True, "profile_image_url": default_image_url})
+    return JsonResponse({"success": False, "errors": "Invalid request method"})
+
+
 @user_passes_test(is_applicant)
 def applicant_profile_view(request):
     profile = get_object_or_404(Profile, user=request.user)
