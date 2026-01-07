@@ -14,7 +14,7 @@
         <nav class="container">
             <a href="{% url 'home' %}" class="logo">
                 {% if company_info.logo %}
-                    <img src="{{ company_info.logo.url }}" alt="{{ company_info.name }} Logo">
+                    <img src="{{ company_info.logo.url }}" alt="{{ company_info.name }} Logo" class="company-logo">
                 {% else %}
                     <span>{{ company_info.name }}</span>
                 {% endif %}

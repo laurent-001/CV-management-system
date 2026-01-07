@@ -118,22 +118,22 @@ def apply_for_job_view(request, job_id):
 # Applicant dashboard view
 @user_passes_test(is_applicant)
 def applicant_dashboard_view(request):
+    profile = get_object_or_404(Profile, user=request.user)
     applications = JobApplication.objects.filter(
         applicant=request.user, is_active=True
     ).order_by("-submitted_at")
     total_applications = applications.count()
     interviews_scheduled = applications.filter(status="Interview").count()
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)
-    return render(
-        request,
-        "jobs/applicant_dashboard.html",
-        {
-            "applications": applications,
-            "total_applications": total_applications,
-            "interviews_scheduled": interviews_scheduled,
-            "notifications": notifications,
-        },
-    )
+
+    context = {
+        "profile": profile,
+        "applications": applications,
+        "total_applications": total_applications,
+        "interviews_scheduled": interviews_scheduled,
+        "notifications": notifications,
+    }
+    return render(request, "jobs/applicant_dashboard.html", context)
 
 
 # Employer dashboard view
@@ -265,6 +265,15 @@ from django.core.files.base import ContentFile
 import io
 
 # Applicant profile management
+@login_required
+def cv_upload_view(request):
+    if request.method == "POST":
+        profile = request.user.profile
+        profile.cv = request.FILES.get('cv')
+        profile.save()
+        return JsonResponse({"success": True, "cv_url": profile.cv.url})
+    return JsonResponse({"success": False, "errors": "Invalid request method"})
+
 @login_required
 def profile_image_upload_view(request):
     if request.method == "POST":
