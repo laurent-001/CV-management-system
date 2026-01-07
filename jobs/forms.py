@@ -79,9 +79,17 @@ class ProfileImageForm(forms.ModelForm):
 
 
 class ProfileForm(forms.ModelForm):
+    skills = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Enter skills separated by commas"}),
+        required=False,
+    )
+    work_experience = forms.CharField(widget=forms.Textarea(attrs={"rows": 4}), required=False)
+    education = forms.CharField(widget=forms.Textarea(attrs={"rows": 4}), required=False)
+
     class Meta:
         model = Profile
-        fields = ("bio", "cv")
+        fields = ("bio", "skills", "work_experience", "education", "cv")
+
 
 
 class FeedbackForm(forms.ModelForm):

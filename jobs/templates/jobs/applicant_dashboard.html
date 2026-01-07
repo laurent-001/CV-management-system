@@ -1,61 +1,108 @@
-{% extends 'jobs/dashboard_base.html' %}
+{% extends 'jobs/base.html' %}
+{% load static %}
+{% load custom_filters %}
 {% block title %}Applicant Dashboard{% endblock %}
-{% block page_title %}Applicant Dashboard{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'jobs/css/dashboard.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="summary-cards">
-    <div class="card">
-        <h3>Total Applications</h3>
-        <p>{{ total_applications }}</p>
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome back, {{ user.first_name }} 👋</h1>
     </div>
-    <div class="card">
-        <h3>Interviews Scheduled</h3>
-        <p>{{ interviews_scheduled }}</p>
-    </div>
-</div>
 
-<div class="notifications">
-    <h2>Notifications</h2>
-    {% for notification in notifications %}
-        <div class="notification">
-            <p>{{ notification.message }}</p>
-            <span class="date">{{ notification.created_at|date:"Y-m-d" }}</span>
+    <div class="dashboard-grid">
+        <div class="profile-main">
+            <!-- Profile Header Card -->
+            <div class="profile-header-card">
+                <div class="profile-image">
+                    <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture">
+                </div>
+                <div class="profile-info">
+                    <h2>{{ user.get_full_name }}</h2>
+                    <p>{{ user.email }}</p>
+                </div>
+            </div>
+
+            <!-- Profile Details Section -->
+            <div class="profile-details-section">
+                <div class="details-card">
+                    <h3>Skills</h3>
+                    <div class="skills-tags">
+                        {% for skill in user.profile.skills|split:',' %}
+                            <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="details-card">
+                    <h3>Work Experience</h3>
+                    <p>{{ user.profile.work_experience|linebreaks }}</p>
+                </div>
+                <div class="details-card">
+                    <h3>Education</h3>
+                    <p>{{ user.profile.education|linebreaks }}</p>
+                </div>
+                <div class="details-card">
+                    <h3>Curriculum Vitae (CV)</h3>
+                    {% if user.profile.cv %}
+                        <a href="{{ user.profile.cv.url }}" class="btn btn-secondary" download>Download CV</a>
+                    {% else %}
+                        <p>No CV uploaded.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    {% empty %}
-        <p>No new notifications.</p>
-    {% endfor %}
+
+        <div class="profile-sidebar">
+            <!-- Quick Action Buttons -->
+            <div class="quick-actions">
+                <a href="{% url 'applicant_profile_edit' %}" class="btn btn-primary">Edit Profile</a>
+                <a href="#" class="btn btn-secondary" id="upload-profile-image-btn">Change Profile Image</a>
+                <a href="#" class="btn btn-secondary" id="upload-cv-btn">Upload CV</a>
+                <a href="{% url 'job_list' %}" class="btn btn-outline">View Applied Jobs</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Status Section -->
+    <div class="application-status-section">
+        <h2>Application Status</h2>
+        <div class="application-list">
+            {% for app in applications %}
+                <div class="application-item">
+                    <div class="job-info">
+                        <h4>{{ app.job.title }}</h4>
+                        <p>Applied on: {{ app.submitted_at|date:"F d, Y" }}</p>
+                    </div>
+                    <div class="status">
+                        <span class="status-badge status-{{ app.status|lower }}">{{ app.get_status_display }}</span>
+                    </div>
+                </div>
+            {% empty %}
+                <p>You have no active applications.</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
-<div class="application-listings">
-    <h2>Your Applications</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Job Title</th>
-                <th>Company</th>
-                <th>Date Applied</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for application in applications %}
-                <tr>
-                    <td>{{ application.job.title }}</td>
-                    <td>{{ company_info.name|default:'The Company' }}</td>
-                    <td>{{ application.submitted_at|date:"Y-m-d" }}</td>
-                    <td>{{ application.status }}</td>
-                    <td>
-                        <a href="{% url 'job_detail' application.job.id %}">View Details</a>
-                        <a href="{% url 'withdraw_application' application.id %}">Withdraw</a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5">You have not applied for any jobs yet.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<!-- Hidden forms for file uploads -->
+<form id="profile-image-form" style="display: none;">
+    {% csrf_token %}
+    <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+</form>
+<form id="cv-form" style="display: none;">
+    {% csrf_token %}
+    <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx">
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script
+    src="{% static 'jobs/js/dashboard.js' %}"
+    data-profile-image-upload-url="{% url 'profile_image_upload' %}"
+    data-cv-upload-url="{% url 'cv_upload' %}"
+></script>
 {% endblock %}

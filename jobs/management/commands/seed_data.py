@@ -21,6 +21,7 @@ class Command(BaseCommand):
             email="contact@innovateinc.com",
             phone="123-456-7890",
             address="123 Tech Avenue, Silicon Valley, CA",
+            logo="company/logo.svg",
         )
         self.stdout.write(self.style.SUCCESS('Successfully created company info.'))
 
@@ -43,7 +44,14 @@ class Command(BaseCommand):
             first_name='Jane',
             last_name='Smith',
         )
-        Profile.objects.create(user=applicant_user, role='APPLICANT')
+        Profile.objects.create(
+            user=applicant_user,
+            role='APPLICANT',
+            profile_picture="profiles/placeholder.png",
+            skills="Django, Python, HTML, CSS",
+            work_experience="2 years as a junior developer.",
+            education="B.S. in Computer Science",
+        )
         self.stdout.write(self.style.SUCCESS('Successfully created a job applicant user.'))
 
         # Create Job Positions

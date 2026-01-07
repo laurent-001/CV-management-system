@@ -25,6 +25,9 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     bio = models.TextField(blank=True)
+    skills = models.CharField(max_length=255, blank=True)
+    work_experience = models.TextField(blank=True)
+    education = models.TextField(blank=True)
     profile_picture = models.ImageField(
         upload_to="profiles/", default="profiles/default.jpg", null=True, blank=True
     )

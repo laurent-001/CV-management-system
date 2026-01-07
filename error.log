@@ -1,8 +1,0 @@
-"GET /test-404/ HTTP/1.1" 500 59
-"GET /test-404/ HTTP/1.1" 500 59
-Not Found: /test-404/
-"GET /test-404/ HTTP/1.1" 404 4605
-Not Found: /static/jobs/css/styles.css
-"GET /static/jobs/css/styles.css HTTP/1.1" 404 4605
-Not Found: /static/css/error_pages.css
-"GET /static/css/error_pages.css HTTP/1.1" 404 4605

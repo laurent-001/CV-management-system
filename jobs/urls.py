@@ -28,4 +28,5 @@ urlpatterns = [
     # Profile image management
     path("profile/upload-image/", views.profile_image_upload_view, name="profile_image_upload"),
     path("profile/remove-image/", views.profile_image_remove_view, name="profile_image_remove"),
+    path("profile/upload-cv/", views.cv_upload_view, name="cv_upload"),
 ]

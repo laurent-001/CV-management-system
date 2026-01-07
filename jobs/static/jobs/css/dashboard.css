@@ -1,0 +1,129 @@
+:root {
+    --primary-color: #FF7A00;
+    --secondary-color: #111111;
+    --accent-color: #FFFFFF;
+    --light-gray: #f9f9f9;
+    --dark-gray: #333;
+    --border-radius: 12px;
+    --shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+}
+
+.dashboard-container {
+    padding: 40px 0;
+    background-color: var(--light-gray);
+}
+
+.dashboard-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 30px;
+}
+
+.profile-header-card {
+    background: var(--accent-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    padding: 30px;
+    border-left: 5px solid var(--primary-color);
+}
+
+.profile-image img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    object-fit: cover;
+    aspect-ratio: 1 / 1;
+}
+
+.profile-info {
+    margin-left: 25px;
+}
+
+.profile-info h2 {
+    margin: 0 0 5px 0;
+    font-size: 1.8rem;
+}
+
+.profile-info p {
+    margin: 0;
+    color: #777;
+}
+
+.profile-details-section {
+    margin-top: 30px;
+}
+
+.details-card {
+    background: var(--accent-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.details-card h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.skills-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skill-tag {
+    background: var(--primary-color);
+    color: var(--accent-color);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+.quick-actions {
+    background: var(--accent-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 25px;
+}
+
+.quick-actions .btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.application-status-section {
+    margin-top: 40px;
+}
+
+.application-list {
+    background: var(--accent-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.application-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.application-item:last-child {
+    border-bottom: none;
+}
